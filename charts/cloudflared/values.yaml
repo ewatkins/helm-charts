@@ -1,0 +1,124 @@
+# Default values for cloudflared.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  commonLabels: {}
+  commonAnnotations: {}
+
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 2
+
+image:
+  repository: cloudflare/cloudflared
+  tag: 2024.11.1
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+imagePullSecrets: []
+
+deployment:
+  enabled: true
+  name: ""
+  replicaCount: 1
+
+  labels: {}
+  annotations: {}
+  selector: {}
+
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+pod:
+  labels: {}
+  annotations: {}
+  securityContext: {}
+
+securityContext: {}
+
+terminationGracePeriodSeconds:
+
+resources: {}
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+#   limits:
+#     cpu: 100m
+#     memory: 128Mi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Labels to add to the service account
+  labels: {}
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  automountToken: false
+
+priorityClassName: ""
+
+credentials:
+  # -- Name of the Secret containing the cloudflared TUNNEL_ID and credentials.
+  secret: cloudflared-creds
+  # -- Key in the Secret containing the TUNNEL_ID.
+  tunnel-key: TUNNEL_ID
+  # -- Key in the Secret containing the cloudflared credentials.
+  credentials-key: credentials.json
+
+config:
+  # -- Name of the ConfigMap containing the cloudflared configuration.
+  name: cloudflared-config
+  key: config.yaml
+
+# optional array of extra volume mounts inside cloudflared container
+extraVolumeMounts: []
+# - name: ""
+#   mountPath: ""
+#   subPath: ""
+#   readOnly: true | false
+
+# extra env variables for the cloudflared container
+env: []
+# - name: ""
+#   value: ""
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 10
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 10
+
+extraInitContainers: []
+
+extraContainers: []
+
+extraSecrets: []
+
+extraVolumes: []
+
+nodeSelector: {}
+affinity: {}
+topologySpreadConstraints: []
+tolerations: []

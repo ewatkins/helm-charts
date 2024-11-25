@@ -22,3 +22,42 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "cloudflared.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "cloudflared.labels" -}}
+app.kubernetes.io/name: {{ include "cloudflared.name" . }}
+helm.sh/chart: {{ include "cloudflared.chart" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "cloudflared.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "cloudflared.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Selector labels
+*/}}
+{{- define "cloudflared.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cloudflared.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

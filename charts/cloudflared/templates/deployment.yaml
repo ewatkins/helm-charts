@@ -5,166 +5,184 @@ kind: Deployment
 metadata:
   name: {{ default (include "cloudflared.fullname" .) .Values.deployment.name }}
   namespace: {{ .Release.Namespace }}
-  labels: {{- include "cloudflared.labels" . | nindent 4 }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{ if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 4 }}
-{{- end }}
-  {{- if or .Values.deployment.annotations .Values.customAnnotations }}
-  annotations:
-    {{- if .Values.customAnnotations }}
-    {{- toYaml .Values.customAnnotations | nindent 4 }}
+  labels: 
+    {{- include "cloudflared.labels" . | nindent 4 }}
+    {{- if .Values.deployment.labels }}
+    {{ toYaml .Values.deployment.labels | nindent 4 }}
     {{- end }}
+    {{- if .Values.global.commonLabels }}
+    {{ toYaml .Values.global.commonLabels | nindent 4 }}
+    {{- end }}
+
+  {{- if or .Values.deployment.annotations .Values.global.commonAnnotations }}
+  annotations:
     {{- if .Values.deployment.annotations }}
     {{- toYaml .Values.deployment.annotations | nindent 4 }}
     {{- end }}
+    {{- if .Values.global.commonAnnotations }}
+    {{- toYaml .Values.global.commonAnnotations | nindent 4 }}
+    {{- end }}
   {{- end }}
+
 spec:
-  {{- if and (not .Values.autoscaler.enabled) (not .Values.hpa.enabled) }}
-  replicas: {{ include "cloudflared.replicaCount"}}
-  {{- end }}
+  replicas: {{ .Values.deployment.replicaCount }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
-      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.deployment.rollingUpdate.maxSurge }}
   selector:
-    {{- if .Values.deployment.selector }}
-    {{- toYaml .Values.deployment.selector | nindent 4 }}
-    {{- else }}
     matchLabels:
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/name: {{ template "cloudflared.name" . }}
-    {{- end }}
+      {{- include "cloudflared.selectorLabels" . | nindent 4 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ template "cloudflared.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name | quote }}
-{{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 8 }}
-{{- end }}
+        {{- include "cloudflared.labels" . | nindent 8 }}
+        {{- if .Values.pod.labels }}
+        {{ toYaml .Values.pod.labels | nindent 8 }}
+        {{- end }}
+        {{- if .Values.global.commonLabels }}
+        {{ toYaml .Values.global.commonLabels | nindent 8 }}
+        {{- end }}
+
+      {{- if or .Values.pod.annotations .Values.global.commonAnnotations }}
       annotations:
-{{- if .Values.podAnnotations }}
-{{- toYaml .Values.podAnnotations | indent 8 }}
-{{- end }}
+        {{- if .Values.pod.annotations }}
+        {{- toYaml .Values.pod.annotations | nindent 8 }}
+        {{- end }}
+        {{- if .Values.global.commonAnnotations }}
+        {{- toYaml .Values.global.commonAnnotations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+
     spec:
-      {{- if .Values.podSecurityContext }}
+      {{- with default .Values.securityContext .Values.pod.securityContext }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.terminationGracePeriodSeconds}}
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+
+      {{- with .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
       {{- end }}
+
       serviceAccountName: {{ template "cloudflared.serviceAccountName" . }}
-      {{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName | quote }}
-      {{- end }}
-      {{- if .Values.dnsPolicy }}
-      dnsPolicy: {{ .Values.dnsPolicy }}
-      {{- end }}
-      {{- if .Values.affinity }}
-      affinity:
-{{ toYaml .Values.affinity | indent 8 }}
-      {{- end }}
-      {{- if .Values.topologySpreadConstraints }}
-      topologySpreadConstraints:
-{{ tpl (toYaml .Values.topologySpreadConstraints) $ | indent 8 }}
-      {{- end }}
-      {{- if .Values.tolerations }}
-      tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
-      {{- end }}
-      {{- if .Values.nodeSelector }}
+      
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}    
+
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.nodeSelector | indent 8 }}
+        {{ toYaml . | indent 8 }}
       {{- end }}
-      {{- if not (empty .Values.image.pullSecrets) }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{ toYaml . | indent 8 }}
+      {{- end }}
+
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{ toYaml . | indent 8 }}
+      {{- end }}
+
+      {{- with default .Values.image.pullSecrets .Values.imagePullSecrets) }}
       imagePullSecrets:
-{{ toYaml .Values.image.pullSecrets | indent 8 }}
+        {{ toYaml . | indent 8 }}
       {{- end }}
+
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+      {{- with .Values.extraInitContainers }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+
       containers:
         - name: "cloudflared"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args: [ "tunnel", "--config", "/etc/cloudflared/config/config.yaml", "run", "$(TUNNEL_ID)" ]
+          args: [ 
+            "tunnel", 
+            "--config", 
+            "/etc/cloudflared/config/config.yaml", 
+            "run", 
+            "$(TUNNEL_ID)" 
+          ]
           volumeMounts:
             - name: config
               mountPath: /etc/cloudflared/config/config.yaml
-              subPath: config.yaml
+              subPath: {{ .Values.config.key }} 
               readOnly: true
+
             - name: credentials
               mountPath: /etc/cloudflared/creds/credentials.json
-              subPath: credentials.json
+              subPath: {{ .Values.credentials.credentials-key }}
               readOnly: true
-{{- range .Values.extraSecrets }}
-            - name: {{ .name }}
-                mountPath: {{ .mountPath }}
-                readOnly: true
-{{- end }}
-{{- if .Values.extraVolumeMounts }}
-{{- toYaml .Values.extraVolumeMounts | nindent 12}}
-{{- end }}
+
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12}}
+            {{- end }}
+          
           env:
             - name: TUNNEL_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.creds.name }}
-                  key: TUNNEL_ID
+                  name: {{ .Values.credentials.secret }}
+                  key: {{ .Values.credentials.tunnel-key }}
+
             - name: TUNNEL_CRED_FILE
               value: /etc/cloudflared/creds/credentials.json
-{{- if .Values.env }}          
-{{- toYaml .Values.env | nindent 12}}
-{{- end }}
+
+            {{- if .Values.env }}  
+            {{- toYaml .Values.env | nindent 12}}
+            {{- end }}
+          
+          {{- with .Values.resources }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
-          {{- if .Values.livenessProbe.enabled }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
           livenessProbe:
-            httpGet:
-              path: {{ .Values.livenessProbe.path }}
-              port: {{ .Values.livenessProbe.port }}
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-          {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+
           readinessProbe:
-            httpGet:
-              path: {{ .Values.readinessProbe.path }}
-              port: {{ .Values.readinessProbe.port }}
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-{{- if .Values.securityContext }}
-        securityContext:
-{{- toYaml .Values.securityContext | nindent 12 }}
-{{- end }}
-{{- if .Values.extraContainers }}
-{{ toYaml .Values.extraContainers | indent 8 }}
-{{- end }}
+
+        {{- if .Values.extraContainers }}
+        {{ toYaml .Values.extraContainers | indent 8 }}
+        {{- end }}
+
       volumes:
         - name: config
           configMap:
             name: {{ .Values.config.name }}
             defaultMode: 420
+
         - name: credentials
           secret:
-            secretName: {{ .Values.creds.name }}
+            secretName: {{ .Values.credentials.secret }}
             defaultMode: 400
-{{- range .Values.extraSecrets }}
+
+        {{- range .Values.extraSecrets }}
         - name: {{ .name }}
           secret:
             secretName: {{ .name }}
             defaultMode: {{ default 400 .defaultMode }}
-{{- end }}
-{{- if .Values.extraVolumes }}
-{{ toYaml .Values.extraVolumes | indent 8 }}
-{{- end }}
+        {{- end }}
+
+        {{- if .Values.extraVolumes }}
+        {{ toYaml .Values.extraVolumes | indent 8 }}
+        {{- end }}
+
 {{- end }}

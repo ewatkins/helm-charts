@@ -1,52 +1,45 @@
-{{- if .Values.deployment.enabled }}
+{{- if .Values.service.enabled }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ default (include "cloudflared.fullname" .) .Values.service.name }}
   namespace: {{ .Release.Namespace }}
-  labels: {{- include "cloudflared.labels" . | nindent 4 }}
-{{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 4 }}
-{{- end }}
-  {{- if or .Values.service.annotations .Values.customAnnotations }}
+  labels: 
+    {{- include "cloudflared.labels" . | nindent 4 }}
+    {{- if .Values.service.labels }}
+    {{ toYaml .Values.service.labels | nindent 4 }}
+    {{- end }}
+    {{- if .Values.global.commonLabels }}
+    {{ toYaml .Values.global.commonLabels | nindent 4 }}
+    {{- end }}
+  
+  {{- if or .Values.service.annotations .Values.global.commonAnnotations }}
   annotations:
     {{- if .Values.service.annotations }}
     {{- toYaml .Values.service.annotations | nindent 4 }}
     {{- end }}
-    {{- if .Values.customAnnotations }}
-    {{- toYaml .Values.customAnnotations | nindent 4 }}
+    {{- if .Values.global.commonAnnotations }}
+    {{- toYaml .Values.global.commonAnnotations | nindent 4 }}
     {{- end }}
   {{- end }}
+
 spec:
-  type: {{ default "ClusterIP" .Values.serviceType }}
-  ipFamilyPolicy: {{ default "SingleStack" .Values.service.ipFamilyPolicy }}
+  type: {{ .Values.service.type }}
+
   {{- if .Values.service.clusterIP }}
   clusterIP: {{ .Values.service.clusterIP }}
   {{- end }}
-  {{- if .Values.service.clusterIPs }}
-  clusterIPs:
-  {{ toYaml .Values.service.clusterIPs | nindent 4 }}
-  {{- end }}
-  internalTrafficPolicy: {{ default "Cluster" .Values.service.internalTrafficPolicy }}
+
   ports:
-    {{- if .Values.livenessProbe.enabled }}
-    - name: http
-      port: {{ .default 8080 .Values.service.livenessProbe.port }}
+    {{- with .Values.service.port }}
+    - port: {{ . }}
+      targetPort: http
       protocol: TCP
-      targetPort: {{ .default 8080 .Values.service.livenessProbe.port }}
+      name: http
     {{- end }}
-    {{- if .Values.readinessProbe.enabled }}
-    - name: http
-      port: {{ .default 8181 .Values.service.readinessProbe.port }}
-      protocol: TCP
-      targetPort: {{ .default 8181 .Values.service.readinessProbe.port }}
-    {{- end }}
+
   selector:
-    {{- if .Values.service.selector }}
-    {{- toYaml .Values.service.selector | nindent 4 }}
-    {{- else }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/name: {{ template "cloudflared.name" . }}
-    {{- end }}
+    {{- include "cloudflared.selectorLabels" . | nindent 4 }}
+
 {{- end }}

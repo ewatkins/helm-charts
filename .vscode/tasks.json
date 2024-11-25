@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "lint",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "ct-lint",
+        "helm-docs",
+        "kubeval",
+        "ct-install"
+      ],
+      "problemMatcher": [],
+    },
+    {
+      "label": "ct-lint",
+      "type": "shell",
+      "command": "ct lint --config .github/ct.yaml",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": false,
+      }
+    },
+    {
+      "label": "helm-docs",
+      "type": "shell",
+      "command": "helm-docs",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": false,
+      }
+    },
+    {
+      "label": "kubeconform",
+      "type": "shell",
+      "command": "helm template --values ${workspaceFolder}/charts/${input:chart}/ci/ci-values.yaml ${workspaceFolder}/charts/${input:chart} | kubeval --strict --kubernetes-version 1.24.1 --schema-location https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": false,
+      }
+    },
+    {
+      "label": "ct-install",
+      "type": "shell",
+      "command": "",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": false,
+      }
+    },
+  ],
+  "inputs": [
+    {
+      "id": "chart",
+      "description": "Chart name",
+      "type": "promptString"
+    }
+  ]
+}
