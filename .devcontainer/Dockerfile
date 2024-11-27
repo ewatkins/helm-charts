@@ -1,5 +1,7 @@
 FROM ghcr.io/containerbase/devcontainer:13.0.21
 
+ENV container=docker
+
 USER root
 
 COPY tools/*.sh /usr/local/containerbase/tools/
@@ -13,9 +15,6 @@ USER vscode
 # renovate: datasource=github-releases packageName=kubernetes/kubernetes
 RUN install-tool kubectl v1.31.3
 
-# renovate: datasource=github-releases packageName=kubernetes-sigs/kind
-RUN install-tool kind v0.25.0
-
 # renovate: datasource=github-releases packageName=helm/helm
 RUN install-tool helm v3.16.3
 
@@ -24,3 +23,7 @@ RUN install-tool helm-docs 1.14.2
 
 # renovate: datasource=github-releases packageName=yannh/kubeconform
 RUN install-tool kubeconform v0.6.7
+
+COPY --chmod=755 ./entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -3,10 +3,14 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"version": "latest",
+			"moby": true
+		},
+    "ghcr.io/rio/features/k3d:1.1.0": {}
+  },
   "init": true,
-  "mounts": [
-    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-  ],
   "customizations": {
     "vscode": {
       "terminal.integrated.profiles.linux": {
@@ -29,6 +33,6 @@
       }
     }
   },
-  "postCreateCommand": ".devcontainer/post-create.sh",
+  "postCreateCommand": "/entrypoint.sh",
   "waitFor": "postCreateCommand"
 }
