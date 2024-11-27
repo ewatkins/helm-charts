@@ -40,3 +40,34 @@
 
         - name: Run lint
           run: ct lint --config .github/ct.yaml
+
+    kubeconform-chart:
+      runs-on: ubuntu-latest
+      needs:
+        - lint-chart
+      strategy:
+        matrix:
+          k8s:
+            # from https://github.com/yannh/kubernetes-json-schema
+            - v1.27.14
+            - v1.28.10
+            - v1.29.5
+            - v1.30.1
+            - v1.31.3
+      steps:
+        - name: Generate Token
+          uses: actions/create-github-app-token@v1
+          id: app-token
+          with:
+            app-id: "${{ secrets.BOT_APP_ID }}"
+            private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
+  
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            token: "${{ steps.app-token.outputs.token }}"
+
+        - name: Run kubeconform
+          env:
+            KUBERNETES_VERSION: ${{ matrix.k8s }}
+          run: .github/kubeconform.sh
