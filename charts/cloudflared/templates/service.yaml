@@ -31,13 +31,14 @@ spec:
   clusterIP: {{ .Values.service.clusterIP }}
   {{- end }}
 
-  {{- with .Values.service.port }}
+
   ports:
+    {{- with .Values.service.ports }}
     - port: {{ . }}
       targetPort: http
       protocol: TCP
       name: http
-  {{- end }}
+    {{- end }}
 
   selector:
     {{- include "cloudflared.selectorLabels" . | nindent 4 }}

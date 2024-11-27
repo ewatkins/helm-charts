@@ -40,7 +40,7 @@ service:
   annotations: {}
   selector: {}
 
-  ports: []
+  ports: ["8080"]
 
 pod:
   labels: {}
