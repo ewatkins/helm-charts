@@ -32,6 +32,16 @@ deployment:
     maxSurge: 25%
     maxUnavailable: 25%
 
+service:
+  enabled: true
+  name: ""
+
+  labels: {}
+  annotations: {}
+  selector: {}
+
+  ports: []
+
 pod:
   labels: {}
   annotations: {}
@@ -69,16 +79,16 @@ priorityClassName: ""
 
 credentials:
   # -- Name of the Secret containing the cloudflared TUNNEL_ID and credentials.
-  secret: cloudflared-creds
+  secret: ""
   # -- Key in the Secret containing the TUNNEL_ID.
-  tunnel-key: TUNNEL_ID
+  tunnel_key: ""
   # -- Key in the Secret containing the cloudflared credentials.
-  credentials-key: credentials.json
+  credentials_key: ""
 
 config:
   # -- Name of the ConfigMap containing the cloudflared configuration.
-  name: cloudflared-config
-  key: config.yaml
+  name: ""
+  key: ""
 
 # optional array of extra volume mounts inside cloudflared container
 extraVolumeMounts: []

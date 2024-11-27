@@ -33,7 +33,7 @@ spec:
       maxSurge: {{ .Values.deployment.rollingUpdate.maxSurge }}
   selector:
     matchLabels:
-      {{- include "cloudflared.selectorLabels" . | nindent 4 }}
+      {{- include "cloudflared.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
@@ -91,7 +91,7 @@ spec:
         {{ toYaml . | indent 8 }}
       {{- end }}
 
-      {{- with default .Values.image.pullSecrets .Values.imagePullSecrets) }}
+      {{- with default .Values.image.pullSecrets .Values.imagePullSecrets }}
       imagePullSecrets:
         {{ toYaml . | indent 8 }}
       {{- end }}
@@ -110,19 +110,19 @@ spec:
           args: [ 
             "tunnel", 
             "--config", 
-            "/etc/cloudflared/config/config.yaml", 
+            "/etc/cloudflared/config/{{ .Values.config.key }}", 
             "run", 
             "$(TUNNEL_ID)" 
           ]
           volumeMounts:
             - name: config
-              mountPath: /etc/cloudflared/config/config.yaml
+              mountPath: /etc/cloudflared/config/{{ .Values.config.key }}
               subPath: {{ .Values.config.key }} 
               readOnly: true
 
             - name: credentials
-              mountPath: /etc/cloudflared/creds/credentials.json
-              subPath: {{ .Values.credentials.credentials-key }}
+              mountPath: /etc/cloudflared/creds/{{ .Values.credentials.credentials_key }}
+              subPath: {{ .Values.credentials.credentials_key }}
               readOnly: true
 
             {{- if .Values.extraVolumeMounts }}
@@ -134,10 +134,10 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.credentials.secret }}
-                  key: {{ .Values.credentials.tunnel-key }}
+                  key: {{ .Values.credentials.tunnel_key }}
 
             - name: TUNNEL_CRED_FILE
-              value: /etc/cloudflared/creds/credentials.json
+              value: /etc/cloudflared/creds/{{ .Values.credentials.credentials_key }}
 
             {{- if .Values.env }}  
             {{- toYaml .Values.env | nindent 12}}

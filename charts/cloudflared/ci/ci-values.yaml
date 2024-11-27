@@ -1,0 +1,12 @@
+credentials:
+  # -- Name of the Secret containing the cloudflared TUNNEL_ID and credentials.
+  secret: cloudflared-creds
+  # -- Key in the Secret containing the TUNNEL_ID.
+  tunnel_key: TUNNEL_ID
+  # -- Key in the Secret containing the cloudflared credentials.
+  credentials_key: credentials.json
+
+config:
+  # -- Name of the ConfigMap containing the cloudflared configuration.
+  name: cloudflared-config
+  key: config.yaml
