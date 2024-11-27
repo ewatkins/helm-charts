@@ -20,26 +20,26 @@
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
-          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+          uses: actions/checkout@v4.2.2
           with:
             fetch-depth: 0
 
         - name: Install Helm
-          uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
+          uses: azure/setup-helm@v4.2.0
           with:
             version: v3.16.3 # renovate: datasource=github-releases depName=helm packageName=helm/helm
 
-        - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        - uses: actions/setup-python@v5.3.0
           with:
             python-version-file: .python-version
 
         - name: Install chart-testing
-          uses: helm/chart-testing-action@e6669bcd63d7cb57cb4380c33043eebe5d111992 # v2.6.1
+          uses: helm/chart-testing-action@v2.6.1
           with:
             version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
 
-        - name: Run lint
-          run: ct lint --config .github/ct.yaml
+        - name: Run lintgit diff --find-renames --name-only "$(git rev-parse --abbrev-ref HEAD)" remotes/origin/main -- charts | cut -d '/' -f 2 | uniq
+          run: ct lint --config .github/ci/ct.yaml
 
     kubeconform-chart:
       runs-on: ubuntu-latest
@@ -70,4 +70,66 @@
         - name: Run kubeconform
           env:
             KUBERNETES_VERSION: ${{ matrix.k8s }}
-          run: .github/kubeconform.sh
+          run: .github/ci/kubeconform.sh
+
+    install-chart:
+      name: install-chart
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name != 'pull_request' || github.repository_owner != github.event.pull_request.head.repo.owner.login || !startsWith(github.event.pull_request.head.ref, 'renovate/') }}
+      needs:
+        - lint-chart
+        - kubeconform-chart
+      strategy:
+        matrix:
+          k8s:
+            # from https://hub.docker.com/r/kindest/node/tags
+            - v1.27.16 # renovate: kindest
+            - v1.28.15 # renovate: kindest
+            - v1.29.10 # renovate: kindest
+            - v1.30.6 # renovate: kindest
+            - v1.31.2 # renovate: kindest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4.2.2
+          with:
+            fetch-depth: 0
+
+        - name: Create kind ${{ matrix.k8s }} cluster
+          uses: helm/kind-action@v1.10.0
+          with:
+            node_image: kindest/node:${{ matrix.k8s }}
+            version: v0.25.0 # renovate: datasource=github-releases depName=kind packageName=kubernetes-sigs/kind
+
+        - name: Install chart-testing
+          uses: helm/chart-testing-action@v2.6.1
+          with:
+            version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
+
+        - name: Run chart install
+          run: ct install --config .github/ci/ct.yaml --all
+
+    # Catch-all required check for test matrix
+    test-success:
+      needs:
+        - lint-chart
+        - kubeconform-chart
+        - install-chart
+      runs-on: ubuntu-latest
+      timeout-minutes: 1
+      if: always()
+      steps:
+        - name: Fail for failed or cancelled lint-chart
+          if: |
+            needs.lint-chart.result == 'failure' ||
+            needs.lint-chart.result == 'cancelled'
+          run: exit 1
+        - name: Fail for failed or cancelled kubeconform-chart
+          if: |
+            needs.kubeconform-chart.result == 'failure' ||
+            needs.kubeconform-chart.result == 'cancelled'
+          run: exit 1
+        - name: Fail for failed or cancelled install-chart
+          if: |
+            needs.install-chart.result == 'failure' ||
+            needs.install-chart.result == 'cancelled'
+          run: exit 1
