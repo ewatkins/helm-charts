@@ -34,13 +34,25 @@ deployment:
 
 service:
   enabled: true
+  # -- Service name.
   name: ""
+  
+  # -- Service type.
+  type: ClusterIP
 
-  labels: {}
+  # -- Service labels.
+  labels: {}  
+  # -- Service annotations.
   annotations: {}
+  # -- Service selector.
   selector: {}
 
-  ports: ["8080"]
+  # -- Default port.
+  port: 8081
+
+  # -- Additional ports to expose.
+  # @default -- See _values.yaml_
+  additionalPorts: []
 
 pod:
   labels: {}
