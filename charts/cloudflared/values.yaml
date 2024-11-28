@@ -36,12 +36,12 @@ service:
   enabled: true
   # -- Service name.
   name: ""
-  
+
   # -- Service type.
   type: ClusterIP
 
   # -- Service labels.
-  labels: {}  
+  labels: {}
   # -- Service annotations.
   annotations: {}
   # -- Service selector.
@@ -89,6 +89,15 @@ serviceAccount:
 
 priorityClassName: ""
 
+args:
+  [
+    "tunnel",
+    "--config",
+    "/etc/cloudflared/config/config.yaml",
+    "run",
+    "$(TUNNEL_ID)",
+  ]
+
 credentials:
   create: false
   secretName: ""
@@ -102,10 +111,12 @@ tunnel_id:
   value: ""
 
 config:
-  create: true
+  create: false
   name: ""
   key: ""
   value: ""
+
+extraVolumes: []
 
 # optional array of extra volume mounts inside cloudflared container
 extraVolumeMounts: []
@@ -115,35 +126,63 @@ extraVolumeMounts: []
 #   readOnly: true | false
 
 # extra env variables for the cloudflared container
-env: []
+extraEnv: []
 # - name: ""
 #   value: ""
 
+## Liveness, readiness and startup probes
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 60
-  periodSeconds: 30
+  # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+  failureThreshold: 3
+  # -- Number of seconds after the container has started before [probe] is initiated
+  initialDelaySeconds: 5
+  # -- How often (in seconds) to perform the [probe]
+  periodSeconds: 10
+  # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+  successThreshold: 1
+  # -- Number of seconds after which the [probe] times out
   timeoutSeconds: 1
-  failureThreshold: 10
+  ## Probe configuration
+  httpGet:
+    path: /healthy
+    port: 8080
 
 readinessProbe:
+  # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+  failureThreshold: 3
+  # -- Number of seconds after the container has started before [probe] is initiated
+  initialDelaySeconds: 5
+  # -- How often (in seconds) to perform the [probe]
+  periodSeconds: 10
+  # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+  successThreshold: 1
+  # -- Number of seconds after which the [probe] times out
+  timeoutSeconds: 1
+  ## Probe configuration
   httpGet:
     path: /ready
-    port: http
-  initialDelaySeconds: 60
-  periodSeconds: 30
+    port: 8080
+
+startupProbe:
+  # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+  failureThreshold: 60
+  # -- Number of seconds after the container has started before [probe] is initiated
+  initialDelaySeconds: 5
+  # -- How often (in seconds) to perform the [probe]
+  periodSeconds: 10
+  # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+  successThreshold: 1
+  # -- Number of seconds after which the [probe] times out
   timeoutSeconds: 1
-  failureThreshold: 10
+  ## Probe configuration
+  httpGet:
+    path: /healthy
+    port: 8080
 
 extraInitContainers: []
 
 extraContainers: []
-
-extraSecrets: []
-
-extraVolumes: []
 
 nodeSelector: {}
 affinity: {}

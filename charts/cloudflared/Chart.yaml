@@ -1,9 +1,8 @@
 apiVersion: v2
 name: cloudflared
 description: Helm chart to install the cloudflared tunnel.
-type: application
-version: '0.1.0'
-appVersion: '2024.11.1'
+version: "0.1.0"
+appVersion: "2024.11.1"
 keywords:
   - kubernetes
   - reverse-proxy

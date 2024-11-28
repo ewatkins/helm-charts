@@ -1,30 +1,25 @@
+args: ["tunnel", "--no-autoupdate", "--hello-world"]
+
+livenessProbe: []
+
+readinessProbe: []
+
+startupProbe: []
+
 credentials:
   create: true
   secretName: cloudflared-credentials
   key: credentials.json
-  value: |
-    {
-      "AccountTag": "FakeAccountTag",
-      "TunnelSecret": "FakeTunnelSecret",
-      "TunnelID": "FakeTunnelId"
-    }
+  value: ""
 
 tunnel_id:
   create: true
   secretName: cloudflared-tunnel
   key: TUNNEL_KEY
-  value: "TEST_TUNNEL_KEY"
+  value: ""
 
 config:
   create: true
   name: cloudflared-config
   key: config.yaml
-  value: |
-    ---
-    originRequest:
-      originServerName: "fake.dns"
-    
-    ingress:
-      - hostname: "fake.dev"
-        service: fake-service.svc.cluster.local
-      - service: http_status:404
+  value: ""

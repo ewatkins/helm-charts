@@ -107,26 +107,25 @@ spec:
         - name: "cloudflared"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args: [ 
-            "tunnel", 
-            "--config", 
-            "/etc/cloudflared/config/{{ .Values.config.key }}", 
-            "run", 
-            "$(TUNNEL_ID)" 
-          ]
-          volumeMounts:
-            - name: config
-              mountPath: /etc/cloudflared/config/{{ .Values.config.key }}
-              subPath: {{ .Values.config.key }} 
-              readOnly: true
 
-            - name: credentials
-              mountPath: /etc/cloudflared/creds/{{ .Values.credentials.key }}
-              subPath: {{ .Values.credentials.key }}
-              readOnly: true
+          args:          
+          {{ range .Values.args }}
+            - {{ . }}
+          {{ end }}
+
+          volumeMounts:
+              - name: config
+                mountPath: /etc/cloudflared/config/{{ .Values.config.key }}
+                subPath: {{ .Values.config.key }}
+                readOnly: true
+
+              - name: credentials
+                mountPath: /etc/cloudflared/creds/{{ .Values.credentials.key }}
+                subPath: {{ .Values.credentials.key }}
+                readOnly: true
 
             {{- if .Values.extraVolumeMounts }}
-            {{- toYaml .Values.extraVolumeMounts | nindent 12}}
+            {{- toYaml .Values.volumeMounts | nindent 12}}
             {{- end }}
           
           env:
@@ -139,8 +138,8 @@ spec:
             - name: TUNNEL_CRED_FILE
               value: /etc/cloudflared/creds/{{ .Values.credentials.key }}
 
-            {{- if .Values.env }}  
-            {{- toYaml .Values.env | nindent 12}}
+            {{- if .Values.extraEnv }}  
+            {{- toYaml .Values.extraEnv | nindent 12}}
             {{- end }}
           
           {{- with .Values.resources }}
@@ -148,11 +147,20 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
 
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
 
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
 
           {{- with .Values.securityContext }}
           securityContext:
@@ -171,12 +179,6 @@ spec:
         - name: credentials
           secret:
             secretName: {{ .Values.credentials.secretName }}
-
-        {{- range .Values.extraSecrets }}
-        - name: {{ .name }}
-          secret:
-            secretName: {{ .name }}
-        {{- end }}
 
         {{- if .Values.extraVolumes }}
         {{ toYaml .Values.extraVolumes | indent 8 }}
