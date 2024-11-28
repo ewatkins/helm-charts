@@ -121,8 +121,8 @@ spec:
               readOnly: true
 
             - name: credentials
-              mountPath: /etc/cloudflared/creds/{{ .Values.credentials.credentials_key }}
-              subPath: {{ .Values.credentials.credentials_key }}
+              mountPath: /etc/cloudflared/creds/{{ .Values.credentials.key }}
+              subPath: {{ .Values.credentials.key }}
               readOnly: true
 
             {{- if .Values.extraVolumeMounts }}
@@ -133,11 +133,11 @@ spec:
             - name: TUNNEL_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.credentials.secret }}
-                  key: {{ .Values.credentials.tunnel_key }}
+                  name: {{ .Values.tunnel_id.secretName }}
+                  key: {{ .Values.tunnel_id.key }}
 
             - name: TUNNEL_CRED_FILE
-              value: /etc/cloudflared/creds/{{ .Values.credentials.credentials_key }}
+              value: /etc/cloudflared/creds/{{ .Values.credentials.key }}
 
             {{- if .Values.env }}  
             {{- toYaml .Values.env | nindent 12}}
@@ -167,18 +167,15 @@ spec:
         - name: config
           configMap:
             name: {{ .Values.config.name }}
-            defaultMode: 420
 
         - name: credentials
           secret:
-            secretName: {{ .Values.credentials.secret }}
-            defaultMode: 400
+            secretName: {{ .Values.credentials.secretName }}
 
         {{- range .Values.extraSecrets }}
         - name: {{ .name }}
           secret:
             secretName: {{ .name }}
-            defaultMode: {{ default 400 .defaultMode }}
         {{- end }}
 
         {{- if .Values.extraVolumes }}

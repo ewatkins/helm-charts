@@ -1,0 +1,18 @@
+{{- if .Values.config.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (include "cloudflared.configConfigMapName" .) .Values.config.name }}
+  namespace: {{ .Release.Namespace }}
+  labels: 
+    {{- include "cloudflared.labels" . | nindent 4 }}
+data:
+  {{ .Values.config.key }}: |-
+  {{- with .Values.config.value }}
+  {{- if kindIs "string" . }}
+    {{- tpl . $ | nindent 4 }}
+  {{- else }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end -}}

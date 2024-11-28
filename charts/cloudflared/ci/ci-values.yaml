@@ -1,12 +1,30 @@
 credentials:
-  # -- Name of the Secret containing the cloudflared TUNNEL_ID and credentials.
-  secret: cloudflared-creds
-  # -- Key in the Secret containing the TUNNEL_ID.
-  tunnel_key: TUNNEL_ID
-  # -- Key in the Secret containing the cloudflared credentials.
-  credentials_key: credentials.json
+  create: true
+  secretName: cloudflared-credentials
+  key: credentials.json
+  value: |
+    {
+      "AccountTag": "FakeAccountTag",
+      "TunnelSecret": "FakeTunnelSecret",
+      "TunnelID": "FakeTunnelId"
+    }
+
+tunnel_id:
+  create: true
+  secretName: cloudflared-tunnel
+  key: TUNNEL_KEY
+  value: "TEST_TUNNEL_KEY"
 
 config:
-  # -- Name of the ConfigMap containing the cloudflared configuration.
+  create: true
   name: cloudflared-config
   key: config.yaml
+  value: |
+    ---
+    originRequest:
+      originServerName: "fake.dns"
+    
+    ingress:
+      - hostname: "fake.dev"
+        service: fake-service.svc.cluster.local
+      - service: http_status:404

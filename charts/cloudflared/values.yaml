@@ -90,17 +90,22 @@ serviceAccount:
 priorityClassName: ""
 
 credentials:
-  # -- Name of the Secret containing the cloudflared TUNNEL_ID and credentials.
-  secret: ""
-  # -- Key in the Secret containing the TUNNEL_ID.
-  tunnel_key: ""
-  # -- Key in the Secret containing the cloudflared credentials.
-  credentials_key: ""
+  create: false
+  secretName: ""
+  key: ""
+  value: ""
+
+tunnel_id:
+  create: false
+  secretName: ""
+  key: ""
+  value: ""
 
 config:
-  # -- Name of the ConfigMap containing the cloudflared configuration.
+  create: true
   name: ""
   key: ""
+  value: ""
 
 # optional array of extra volume mounts inside cloudflared container
 extraVolumeMounts: []

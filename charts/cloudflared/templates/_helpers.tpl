@@ -55,6 +55,39 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
+Credentials Secret default name
+*/}}
+{{- define "cloudflared.credentialsSecretName" -}}
+{{- if .Values.credentials.create -}}
+    {{- printf "%s-%s" (include "cloudflared.fullname" .) "-credentials" -}}
+{{- else -}}
+    {{ default "default" .Values.credentials.secretName }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Tunnel Secret default name
+*/}}
+{{- define "cloudflared.tunnelIdSecretName" -}}
+{{- if .Values.tunnel_id.create -}}
+    {{- printf "%s-%s" (include "cloudflared.fullname" .) "-tunnel" -}}
+{{- else -}}
+    {{ default "default" .Values.tunnel_id.secretName }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Config ConfigMap default name
+*/}}
+{{- define "cloudflared.configConfigMapName" -}}
+{{- if .Values.config.create -}}
+    {{- printf "%s-%s" (include "cloudflared.fullname" .) "-config" -}}
+{{- else -}}
+    {{ default "default" .Values.config.secretName }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Selector labels
 */}}
 {{- define "cloudflared.selectorLabels" -}}
