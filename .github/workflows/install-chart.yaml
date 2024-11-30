@@ -11,7 +11,17 @@ on:
         default: ""
   
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.vars.outputs.charts }}
+    steps:
+      - name: Create an array of charts
+        id: vars
+        run: echo "charts=$(jq 'split(",")' -Rc <(echo '${{ inputs.chartsToInstall }}'))" >> $GITHUB_OUTPUT
+
   install-chart:
+    needs: setup
     name: install-chart
     runs-on: ubuntu-latest
     strategy:
@@ -23,6 +33,7 @@ jobs:
           - v1.29.10 # renovate: kindest
           - v1.30.6 # renovate: kindest
           - v1.31.2 # renovate: kindest
+        charts: ${{ fromJson(needs.setup.outputs.charts) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -41,4 +52,4 @@ jobs:
           version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
 
       - name: Run chart install
-        run: ct install --config .github/ci/ct-install.yaml --all --charts "${{ inputs.chartsToInstall }}"
+        run: ct install --config .github/ci/ct-install.yaml --charts "${{ matrix.charts }}"

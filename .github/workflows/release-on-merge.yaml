@@ -47,5 +47,7 @@ jobs:
     needs: ["get-changed-charts", "lint-charts", "kubeconform-charts", "install-chart"]
     if: ${{ needs.get-changed-charts.outputs.addedOrModified == 'true' }} || ${{ github.event_name == 'workflow_dispatch' }}
     uses: ewatkins/helm-charts/.github/workflows/release-charts.yaml@main
-    
+    secrets: inherit
+    with:
+      chartsToRelease: "${{ github.event_name == 'workflow_dispatch' && inputs.chartsToRelease || needs.get-changed-charts.outputs.addedOrModifiedCharts }}"
   

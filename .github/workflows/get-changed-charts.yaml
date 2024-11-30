@@ -42,6 +42,7 @@ jobs:
         run: |
           CHARTS=$( \
             echo '${{ steps.changed-files.outputs.all_changed_and_modified_files }}' \
-              | jq --raw-output 'map(sub("^charts/"; "")) | join(",")' \
+              | jq --raw-output 'join(",")' \
           )
+          echo "${CHARTS}"
           echo "addedOrModifiedCharts=${CHARTS}" >> $GITHUB_OUTPUT
