@@ -20,32 +20,32 @@ on:
 
 jobs:
   get-changed-charts:
-    uses: ewatkins/helm-charts/.github/workflows/sub-workflows/get-changed-charts.yaml@main
+    uses: ewatkins/helm-charts/.github/workflows/get-changed-charts.yaml@main
 
   lint-charts:
     needs: ["get-changed-charts"]
     if: ${{ needs.get-changed-charts.outputs.addedOrModified == 'true' }} || ${{ github.event_name == 'workflow_dispatch' }}
-    uses: ewatkins/helm-charts/.github/workflows/sub-workflows/lint.yaml@main
+    uses: ewatkins/helm-charts/.github/workflows/lint.yaml@main
     with:
       chartsToLint: "${{ github.event_name == 'workflow_dispatch' && inputs.chartsToRelease || needs.get-changed-charts.outputs.addedOrModifiedCharts }}"
   
   kubeconform-charts:
     needs: ["get-changed-charts", "lint-charts"]
     if: ${{ needs.get-changed-charts.outputs.addedOrModified == 'true' }} || ${{ github.event_name == 'workflow_dispatch' }}
-    uses: ewatkins/helm-charts/.github/workflows/sub-workflows/kubeconform.yaml@main
+    uses: ewatkins/helm-charts/.github/workflows/kubeconform.yaml@main
     with:
       chartsToKubeconform: "${{ github.event_name == 'workflow_dispatch' && inputs.chartsToRelease || needs.get-changed-charts.outputs.addedOrModifiedCharts }}"
 
   install-chart:
     needs: ["get-changed-charts", "lint-charts", "kubeconform-charts"]
     if: ${{ needs.get-changed-charts.outputs.addedOrModified == 'true' }} || ${{ github.event_name == 'workflow_dispatch' }}
-    uses: ewatkins/helm-charts/.github/workflows/sub-workflows/install-chart.yaml@main
+    uses: ewatkins/helm-charts/.github/workflows/install-chart.yaml@main
     with:
       chartsToInstall: "${{ github.event_name == 'workflow_dispatch' && inputs.chartsToRelease || needs.get-changed-charts.outputs.addedOrModifiedCharts }}"
   
   release-charts:
     needs: ["get-changed-charts", "lint-charts", "kubeconform-charts", "install-chart"]
     if: ${{ needs.get-changed-charts.outputs.addedOrModified == 'true' }} || ${{ github.event_name == 'workflow_dispatch' }}
-    uses: ewatkins/helm-charts/.github/workflows/sub-workflows/release-charts.yaml@main
+    uses: ewatkins/helm-charts/.github/workflows/release-charts.yaml@main
     
   
