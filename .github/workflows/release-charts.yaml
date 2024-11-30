@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "Release Charts"
+name: "Subflow: Release Charts"
 
 on:
   workflow_call:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   release:
-    permission:
+    permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
