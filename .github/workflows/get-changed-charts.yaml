@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Get Changed Charts"
+
+on:
+  workflow_call:
+    outputs:
+      addedOrModified:
+        description: "Whether any files were added or modified"
+        value: ${{ jobs.get-changed-charts.outputs.addedOrModified }}
+      addedOrModifiedCharts:
+        description: "The list of charts that were added or modified"
+        value: ${{ jobs.get-changed-charts.outputs.addedOrModifiedCharts }}
+
+jobs:
+  get-changed-charts:
+    name: Get Changed Charts
+    runs-on: ubuntu-latest
+    outputs:
+      addedOrModified: "${{ steps.changed-files.outputs.all_changed_and_modified_files_count > 0 }}"
+      addedOrModifiedCharts: "${{ steps.changed-charts.outputs.addedOrModifiedCharts }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Get Changed Charts
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: charts/**
+          dir_names: true
+          dir_names_max_depth: 2
+          json: true
+          escape_json: false
+
+      - if: ${{ steps.changed-files.outputs.all_changed_and_modified_files_count > 0 }}
+        name: Determine Changed Charts
+        id: changed-charts
+        shell: bash
+        run: |
+          CHARTS=$( \
+            echo '${{ steps.changed-files.outputs.all_changed_and_modified_files }}' \
+              | jq --raw-output 'map(sub("^charts/"; "")) | join(",")' \
+          )
+          echo "addedOrModifiedCharts=${CHARTS}" >> $GITHUB_OUTPUT

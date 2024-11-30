@@ -11,7 +11,7 @@ KUBECONFORM_VERSION=v0.6.7
 # renovate: datasource=github-releases depName=semver2 packageName=Ariel-Rodriguez/sh-semversion-2
 SEMVER_VERSION=v1.0.5
 
-CHART_DIRS="$(git diff --find-renames --name-only "$(git rev-parse --abbrev-ref HEAD)" remotes/origin/main -- charts | cut -d '/' -f 2 | uniq)"
+# CHART_DIRS="$(git diff --find-renames --name-only "$(git rev-parse --abbrev-ref HEAD)" remotes/origin/main -- charts | cut -d '/' -f 2 | uniq)"
 SCHEMA_LOCATION="https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
 
 # install kubeconform

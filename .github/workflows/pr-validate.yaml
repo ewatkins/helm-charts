@@ -1,15 +1,14 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "Lint and Test Charts on Merge"
+name: "Pull Request: Validate"
 
 on:
-  push:
+  pull_request:
     branches: ["main"]
-    paths:
-      - "charts/**"
+    types: ["opened", "synchronize", "reopened"]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  group: ${{ github.head_ref }}-pr-validate
   cancel-in-progress: true
 
 jobs:
@@ -36,29 +35,3 @@ jobs:
     uses: ewatkins/helm-charts/.github/workflows/install-chart.yaml@main
     with:
       chartsToInstall: "${{ needs.get-changed-charts.outputs.addedOrModifiedCharts }}"
-
-  # Catch-all required check for test matrix
-  test-success:
-    needs:
-      - lint-charts
-      - kubeconform-charts
-      - install-chart
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    if: always()
-    steps:
-      - name: Fail for failed or cancelled lint-chart
-        if: |
-          needs.lint-charts.result == 'failure' ||
-          needs.lint-charts.result == 'cancelled'
-        run: exit 1
-      - name: Fail for failed or cancelled kubeconform-chart
-        if: |
-          needs.kubeconform-charts.result == 'failure' ||
-          needs.kubeconform-charts.result == 'cancelled'
-        run: exit 1
-      - name: Fail for failed or cancelled install-chart
-        if: |
-          needs.install-chart.result == 'failure' ||
-          needs.install-chart.result == 'cancelled'
-        run: exit 1

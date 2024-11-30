@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Install Chart"
+
+on:
+  workflow_call:
+    inputs:
+      chartsToInstall:
+        required: false
+        type: string
+        default: ""
+  
+jobs:
+  install-chart:
+    name: install-chart
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        k8s:
+          # from https://hub.docker.com/r/kindest/node/tags
+          - v1.27.16 # renovate: kindest
+          - v1.28.15 # renovate: kindest
+          - v1.29.10 # renovate: kindest
+          - v1.30.6 # renovate: kindest
+          - v1.31.2 # renovate: kindest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Create kind ${{ matrix.k8s }} cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          node_image: kindest/node:${{ matrix.k8s }}
+          version: v0.25.0 # renovate: datasource=github-releases depName=kind packageName=kubernetes-sigs/kind
+
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+        with:
+          version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
+
+      - name: Run chart install
+        run: ct install --config .github/ci/ct-install.yaml --all --charts "${{ inputs.chartsToInstall }}"
