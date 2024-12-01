@@ -27,7 +27,54 @@ jobs:
         id: vars
         run: echo "charts=$(jq 'split(",")' -Rc <(echo '${{ inputs.chartsToRelease }}'))" >> $GITHUB_OUTPUT
 
-  release:
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: v3.16.3 # renovate: datasource=github-releases depName=helm packageName=helm/helm
+
+  publish-to-ghcr:
+    needs: setup
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        charts: ${{ fromJson(needs.setup.outputs.charts) }}
+    steps:
+      - name: Generate Token
+        uses: actions/create-github-app-token@v1.11.0
+        id: app-token
+        with:
+          app-id: "${{ secrets.BOT_APP_ID }}"
+          private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: "${{ steps.app-token.outputs.token }}"
+          fetch-depth: 0
+
+      - name: Set environment variables
+        id: set-variables
+        run: |
+          echo "REPOSITORY=ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "VERSION=$(yq -r .version ./${{ matrix.charts }}/Chart.yaml)" >> $GITHUB_OUTPUT
+          echo "CHART=$(yq -r .name ./${{ matrix.charts }}/Chart.yaml)" >> $GITHUB_OUTPUT
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ steps.app-token.outputs.token }}
+
+      - name: Push to GHCR
+        run: |
+          helm package ./${{ matrix.charts }} --version ${{ steps.set-variables.outputs.VERSION }}
+          helm push ./${{ steps.set-variables.outputs.CHART}}-${{ steps.set-variables.outputs.VERSION }}.tgz oci://${{ steps.set-variables.outputs.REPOSITORY }}
+
+  publish-to-gh-pages:
     needs: setup
     permissions:
       contents: write
@@ -37,7 +84,7 @@ jobs:
         charts: ${{ fromJson(needs.setup.outputs.charts) }}
     steps:
       - name: Generate Token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v1.11.0
         id: app-token
         with:
           app-id: "${{ secrets.BOT_APP_ID }}"
@@ -54,12 +101,6 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
    
-
-      - name: Install Helm
-        uses: azure/setup-helm@v4.2.0
-        with:
-          version: v3.16.3 # renovate: datasource=github-releases depName=helm packageName=helm/helm
-
       - name: Build chart dependencies
         run: |
           for dir in charts/*/
@@ -73,6 +114,6 @@ jobs:
           version: v1.6.1 # renovate: datasource=github-releases depName=helm packageName=helm/chart-releaser-action
         env:
           CR_TOKEN: "${{ steps.app-token.outputs.token }}"
-          CR_GENERATE_RELEASE_NOTES: false  # TODO
+          CR_GENERATE_RELEASE_NOTES: true
           CR_SKIP_EXISTING: true
           CR_CHARTS_DIR: ${{ matrix.charts }}
