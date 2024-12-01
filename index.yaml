@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  cloudflared:
+  - apiVersion: v2
+    appVersion: 2024.11.1
+    created: "2024-12-01T03:55:21.066206413Z"
+    description: Helm chart to install the cloudflared tunnel.
+    digest: 5be65b7883cfa0c71e0b996397198f44af8d82a377dfef823843d2bcc2f74d35
+    home: https://github.com/cloudflare/cloudflared
+    keywords:
+    - kubernetes
+    - reverse-proxy
+    - cloudflare
+    - cloudflare-tunnel
+    maintainers:
+    - email: eric@ewatkins.dev
+      name: ewatkins
+    name: cloudflared
+    sources:
+    - https://github.com/cloudflare/cloudflared
+    - https://github.com/ewatkins/helm-charts/
+    urls:
+    - https://github.com/ewatkins/helm-charts/releases/download/cloudflared-0.1.0/cloudflared-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-12-01T03:55:21.066244715Z"
