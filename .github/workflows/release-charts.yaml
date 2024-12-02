@@ -17,6 +17,10 @@ on:
         description: The private key of the GitHub App
         required: true
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -34,9 +38,6 @@ jobs:
 
   publish-to-ghcr:
     needs: setup
-    permissions:
-      contents: read
-      packages: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -73,8 +74,6 @@ jobs:
 
   publish-to-gh-pages:
     needs: setup
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
