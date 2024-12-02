@@ -3,7 +3,8 @@
 [![Release](https://img.shields.io/github/actions/workflow/status/ewatkins/helm-charts/release-on-merge.yaml?branch=main&style=for-the-badge&logo=github&logoColor=white&labelColor=222222&color=darkgreen
 )](https://github.com/ewatkins/helm-charts/actions/workflows/release.yaml)&nbsp;&nbsp;
 [![License: Apache-2.0](https://img.shields.io/github/license/ewatkins/helm-charts?style=for-the-badge&labelColor=222222&color=darkgreen
-)](https://opensource.org/license/apache-2-0)
+)](https://opensource.org/license/apache-2-0)&nbsp;&nbsp;
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/ewatkins&style=for-the-badge)](https://artifacthub.io/packages/search?ts_query_web=ewatkins&sort=last_updated)
 
 ## Usage
 
