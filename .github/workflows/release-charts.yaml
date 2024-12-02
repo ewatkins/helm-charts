@@ -63,7 +63,7 @@ jobs:
           echo "VERSION=$(yq -r .version ./${{ matrix.charts }}/Chart.yaml)" >> $GITHUB_OUTPUT
           echo "CHART=$(yq -r .name ./${{ matrix.charts }}/Chart.yaml)" >> $GITHUB_OUTPUT
 
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
