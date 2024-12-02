@@ -9,9 +9,13 @@
 
 [Helm](https://helm.sh) must be installed to use these charts; please refer to the _Helm_ [documentation](https://helm.sh/docs/) to get started.
 
-### Installation
+### OCI Repositories
 
-Add the `ewatkins` repository as follows.
+The recommended way to install these charts is via OCI and the `helm search hub ewatkins` command should list the available charts.
+
+### Non-OCI Repository
+
+If you don't want to use the OCI repositories you can add the `ewatkins` repository as follows.
 
 ```shell
 helm repo add ewatkins https://ewatkins.github.io/helm-charts/
