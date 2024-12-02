@@ -63,11 +63,8 @@ jobs:
           echo "CHART=$(yq -r .name ./${{ matrix.charts }}/Chart.yaml)" >> $GITHUB_OUTPUT
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3.3.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo ${{ steps.app-token.outputs.token }} | helm registry login ghcr.io -u $ --password-stdin
 
       - name: Push to GHCR
         run: |
