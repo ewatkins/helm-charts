@@ -7,3 +7,5 @@ check-version-increment: false
 validate-maintainers: false
 exclude-deprecated: true
 excluded-charts: []
+lint-conf: .github/ci/lint-conf.yaml
+chart-yaml-schema: .github/ci/chart_schema.yaml
