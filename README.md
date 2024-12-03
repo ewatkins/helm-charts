@@ -19,7 +19,7 @@ The recommended way to install these charts is via OCI and the `helm search hub 
 If you don't want to use the OCI repositories you can add the `ewatkins` repository as follows.
 
 ```shell
-helm repo add ewatkins https://ewatkins.github.io/helm-charts/
+helm repo add ewatkins https://helm.ewatkins.dev
 helm repo update
 ```
 
