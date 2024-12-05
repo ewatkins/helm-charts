@@ -10,6 +10,14 @@
       "matchPackagePatterns": ["ghcr.io/ewatkins"]
     },
     {
+      "description": ["Auto-merge devcontainer base images"],
+      "matchDatasources": ["docker"],
+      "automerge": true,
+      "automergeType": "branch",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackagePatterns": ["ghcr.io/containerbase/devcontainer"]
+    },
+    {
       "description": ["Auto-merge GitHub Actions for minor and patch"],
       "matchManagers": ["github-actions"],
       "matchDatasources": ["github-tags"],
