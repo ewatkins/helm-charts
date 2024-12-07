@@ -16,6 +16,7 @@
   ],
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "suppressNotifications": ["prEditedNotification", "prIgnoreNotification"],
+  "assigneesFromCodeOwners": true,
   "onboarding": false,
   "requireConfig": "ignored",
   "ignorePaths": ["**/.archive/**", "**/resources/**"],
