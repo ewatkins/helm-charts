@@ -47,7 +47,7 @@ jobs:
           version: v0.25.0 # renovate: datasource=github-releases depName=kind packageName=kubernetes-sigs/kind
 
       - name: Install chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2.7.0
         with:
           version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
 
