@@ -1,4 +1,4 @@
-FROM ghcr.io/containerbase/devcontainer:13.8.44
+FROM ghcr.io/containerbase/devcontainer:13.8.46
 
 ENV container=docker
 
