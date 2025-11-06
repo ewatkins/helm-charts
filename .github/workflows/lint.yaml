@@ -42,7 +42,7 @@ jobs:
           python-version-file: .python-version
 
       - name: Install chart-testing
-        uses: helm/chart-testing-action@v2.7.0
+        uses: helm/chart-testing-action@v2.8.0
         with:
           version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
 
