@@ -21,7 +21,7 @@ jobs:
       addedOrModifiedCharts: "${{ steps.changed-charts.outputs.addedOrModifiedCharts }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
