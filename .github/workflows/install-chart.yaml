@@ -49,7 +49,7 @@ jobs:
       - name: Install chart-testing
         uses: helm/chart-testing-action@v2.8.0
         with:
-          version: v3.11.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
+          version: v3.14.0 # renovate: datasource=github-releases depName=chart-testing packageName=helm/chart-testing
 
       - name: Run chart install
         run: ct install --config .github/ci/ct-install.yaml --charts "${{ matrix.charts }}"
