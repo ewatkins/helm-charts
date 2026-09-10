@@ -35,7 +35,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4.3.1
         with:
-          version: v3.16.3 # renovate: datasource=github-releases depName=helm packageName=helm/helm
+          version: v3.22.0 # renovate: datasource=github-releases depName=helm packageName=helm/helm
 
       - uses: actions/setup-python@v5.6.0
         with:
